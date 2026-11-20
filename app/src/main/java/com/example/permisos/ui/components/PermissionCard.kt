@@ -11,10 +11,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -112,7 +117,71 @@ fun PermissionCard(
                 )
             }
             //Resultado obtenido por la función del dispositivo
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = resultText,
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
 
+            // Botones de Acción dinámicos según el estado del permiso
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                when (status) {
+                    PermissionStatus.GRANTED -> {
+                        Button(
+                            onClick = onExecuteAction,
+                            enabled = !isActionLoading
+                        ) {
+                            Text(actionButtonText)
+                        }
+                        extraActionButton?.invoke()
+                    }
+
+                    PermissionStatus.NOT_REQUESTED,
+                    PermissionStatus.RATIONALE_REQUIRED -> {
+                        Button(
+                            onClick = onRequestPermission,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (status == PermissionStatus.RATIONALE_REQUIRED)
+                                    status.color else MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text("Solicitar Permiso")
+                        }
+                    }
+
+                    PermissionStatus.PERMANENTLY_DENIED -> {
+                        OutlinedButton(
+                            onClick = onRequestPermission
+                        ) {
+                            Text("Solicitar")
+                        }
+                        Button(
+                            onClick = onOpenSettings,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = status.color
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Abrir Ajustes")
+                        }
+                    }
+                }
+            }
         }
     }
 }
